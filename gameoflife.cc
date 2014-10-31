@@ -150,7 +150,7 @@ main()
 				break;
 			}
 		}
-//		SDL_FillRect(screen, 0, black);
+//		SDL_FillRect(screen, 0, black);*/
 		a.update();
 		++genCount;
 		a.draw(screen);
