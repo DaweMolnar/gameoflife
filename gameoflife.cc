@@ -6,8 +6,8 @@
 #include <cassert>
 #include <iostream>
 
-const unsigned width = 1280;
-const unsigned height = 800;
+const unsigned width = 1366;
+const unsigned height = 768;
 const unsigned bpp = 32;
 static Uint32 white;
 static Uint32 black;
@@ -133,6 +133,7 @@ main()
 	Arena a(width / 2, height / 2);
 	SDL_Init(SDL_INIT_VIDEO);
 	SDL_Surface* screen = SDL_SetVideoMode(width, height, bpp, SDL_HWSURFACE | SDL_DOUBLEBUF | SDL_FULLSCREEN);
+	if(screen==NULL) std::cout << SDL_GetError() << std::endl;
 	assert(screen);
 	white = SDL_MapRGB(screen->format, 255, 255, 255);
 	black = SDL_MapRGB(screen->format, 0, 0, 0);
