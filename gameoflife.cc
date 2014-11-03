@@ -6,11 +6,13 @@
 #include <cassert>
 #include <iostream>
 #include <stdexcept>
+#include <thread>
 
 const unsigned width = 1366;
 const unsigned height = 768;
 const unsigned bpp = 32;
 static SDL_Texture* texture_ = NULL;
+static const unsigned int cores_ = std::thread::hardware_concurrency();
 
 static uint32_t
 my_rand()
@@ -92,6 +94,38 @@ public:
 		unsigned y2 = (y + 1) % h_;
 		return at(x1, y1) + at(x, y1) + at(x2, y1) + at(x1, y) + at(x2, y) + at(x1, y2) + at(x, y2) + at(x2, y2);
 	}
+	
+	void
+	updateThread(int fromX,int toX)
+	{
+		for (unsigned y = 0; y < h_; ++y) {
+			for (unsigned x = fromX; x < (unsigned int)toX; ++x) {
+				bool live = at(x, y);
+				unsigned neighCount = countNeighs(x, y);
+				if (live) {
+					if (neighCount < 2 || neighCount > 3) {
+						live = false;
+					}
+				} else if (neighCount == 3) {
+					live = true;
+				}
+				atNext(x, y) = live;
+			}
+		}
+	}
+
+	void
+	updateMT()
+	{
+		std::vector<std::thread> t;
+		for(unsigned int i = 0; i< cores_; i++) {
+			t.push_back(std::thread(&Arena::updateThread,this,i*(w_/cores_),(i+1)*(w_/cores_)+1));
+		}
+		for(unsigned int i = 0; i < t.size(); i++) {
+			t[i].join();
+		}
+		image_.swap(next_);
+	}
 
 	void
 	update()
@@ -155,13 +189,12 @@ main()
 	if (ren == 0) {
 		throw std::runtime_error(SDL_GetError());
 	}
-
 	bool running = true;
 	unsigned genCount = 0;
 	const Uint32 t0 = SDL_GetTicks();
 	while (running && genCount < 2000) {
 		SDL_Event ev;
-		a.update();
+		a.updateMT();
 		++genCount;
 		a.draw(ren);
 		SDL_RenderPresent(ren);

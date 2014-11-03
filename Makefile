@@ -3,7 +3,7 @@ all: gameoflife
 
 LDFLAGS += -lstdc++ -lSDL2
 CPPFLAGS += -Wall -Wextra -pedantic
-CPPFLAGS += -O3
+CPPFLAGS += -O3 -std=c++11 -pthread
 #CPPFLAGS += -g
 ##CPPFLAGS += -pg
 OBJECTS = gameoflife.o
