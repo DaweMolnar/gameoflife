@@ -1,15 +1,15 @@
 .PHONY: all
 all: gameoflife
 
-LDFLAGS += -lstdc++ -lSDL
+LDFLAGS += -lstdc++ -lSDL2
 CPPFLAGS += -Wall -Wextra -pedantic
-CPPFLAGS += -O0
-CPPFLAGS += -g
-CPPFLAGS += -pg
+CPPFLAGS += -O3
+#CPPFLAGS += -g
+##CPPFLAGS += -pg
 OBJECTS = gameoflife.o
 SOURCE = gameoflife.cc
 gameoflife: $(OBJECTS)
-	$(CC) $(CFLAGS) $(OBJECTS) -o gameoflife $(LDFLAGS)
+	$(CC) $(CPPFLAGS) $(OBJECTS) -o gameoflife $(LDFLAGS)
 
 .PHONY: clean
 clean:

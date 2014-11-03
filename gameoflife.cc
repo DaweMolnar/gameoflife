@@ -1,16 +1,19 @@
 #include "reference.h"
 
-#include <SDL/SDL.h>
+#include <SDL2/SDL.h>
 
 #include <vector>
 #include <cassert>
 #include <iostream>
+#include <stdexcept>
 
 const unsigned width = 1366;
 const unsigned height = 768;
 const unsigned bpp = 32;
-static Uint32 white;
-static Uint32 black;
+static SDL_Texture* texture_ = NULL;
+enum Color {
+	WHITE,BLACK
+};
 
 static uint32_t
 my_rand()
@@ -20,11 +23,14 @@ my_rand()
 }
 
 static void
-plot(SDL_Surface* screen, unsigned x, unsigned y, Uint32 c)
+plot(SDL_Surface* surface, unsigned x, unsigned y)
 {
-	if (x >= width || y >= height) return;
-	Uint32* pix = reinterpret_cast<Uint32*>(screen->pixels) + width * y + x;
-	*pix = c;
+	SDL_Rect rec;
+	rec.x = x;
+	rec.y = y;
+	rec.w = 2;
+	rec.h = 2;
+	SDL_FillRect(surface,&rec,SDL_MapRGB(surface->format,0xff,0xff,0xff));
 }
 
 class Arena {
@@ -41,18 +47,26 @@ public:
 	}
 
 	void
-	draw(SDL_Surface* screen)
+	draw(SDL_Renderer* ren)
 	{
+		SDL_RenderClear(ren);
+		SDL_Surface* surface = SDL_CreateRGBSurface(0,width,height,bpp,0,0,0,100);
+		SDL_LockSurface(surface);
 		for (unsigned y = 0; y < h_; ++y) {
 			for (unsigned x = 0; x < w_; ++x) {
-				Uint32 c = at(x, y) ? white : black;
-//				plot(screen, x, y, c);
-				plot(screen, x * 2, y * 2, c);
-				plot(screen, x * 2 + 1, y * 2, c);
-				plot(screen, x * 2, y * 2 + 1, c);
-				plot(screen, x * 2 + 1, y * 2 + 1, c);
+				Color c = at(x, y) ? WHITE : BLACK;
+				if(c==WHITE)	plot(surface, x*2, y*2);
 			}
 		}
+		SDL_Rect destination;
+		destination.x = 0;
+		destination.y = 0;
+		SDL_UnlockSurface(surface);
+		if(texture_ != NULL) {SDL_DestroyTexture(texture_);}
+		texture_ = SDL_CreateTextureFromSurface(ren,surface);
+		SDL_QueryTexture(texture_, NULL, NULL, &destination.w, &destination.h);
+		SDL_RenderCopy(ren,texture_,NULL,&destination);
+		SDL_FreeSurface(surface);
 	}
 
 	uint8_t&
@@ -131,17 +145,28 @@ int
 main()
 {
 	Arena a(width / 2, height / 2);
-	SDL_Init(SDL_INIT_VIDEO);
-	SDL_Surface* screen = SDL_SetVideoMode(width, height, bpp, SDL_HWSURFACE | SDL_DOUBLEBUF | SDL_FULLSCREEN);
-	if(screen==NULL) std::cout << SDL_GetError() << std::endl;
-	assert(screen);
-	white = SDL_MapRGB(screen->format, 255, 255, 255);
-	black = SDL_MapRGB(screen->format, 0, 0, 0);
+
+	if (SDL_Init(SDL_INIT_EVERYTHING) != 0){
+		throw std::runtime_error(SDL_GetError());
+	}
+	SDL_Window* win = SDL_CreateWindow("gameoflife", 0, 0, width, height, SDL_WINDOW_FULLSCREEN);
+	if (win == 0) {
+		throw std::runtime_error(SDL_GetError());
+	}
+	SDL_Renderer* ren = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+	if (ren == 0) {
+		throw std::runtime_error(SDL_GetError());
+	}
+
 	bool running = true;
 	unsigned genCount = 0;
 	const Uint32 t0 = SDL_GetTicks();
 	while (running && genCount < 2000) {
 		SDL_Event ev;
+		a.update();
+		++genCount;
+		a.draw(ren);
+		SDL_RenderPresent(ren);
 		while (SDL_PollEvent(&ev)) {
 			switch (ev.type) {
 			case SDL_QUIT:
@@ -150,12 +175,6 @@ main()
 				break;
 			}
 		}
-//		SDL_FillRect(screen, 0, black);*/
-		a.update();
-		++genCount;
-		a.draw(screen);
-		SDL_Flip(screen);
-//		SDL_Delay(40);
 	}
 	const Uint32 t1 = SDL_GetTicks();
 	const unsigned tt = t1 - t0;
