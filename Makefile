@@ -13,4 +13,4 @@ gameoflife: $(OBJECTS)
 
 .PHONY: clean
 clean:
-	rm -f gameoflife
+	rm -f gameoflife $(OBJECTS)

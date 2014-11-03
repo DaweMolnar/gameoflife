@@ -11,9 +11,6 @@ const unsigned width = 1366;
 const unsigned height = 768;
 const unsigned bpp = 32;
 static SDL_Texture* texture_ = NULL;
-enum Color {
-	WHITE,BLACK
-};
 
 static uint32_t
 my_rand()
@@ -54,8 +51,9 @@ public:
 		SDL_LockSurface(surface);
 		for (unsigned y = 0; y < h_; ++y) {
 			for (unsigned x = 0; x < w_; ++x) {
-				Color c = at(x, y) ? WHITE : BLACK;
-				if(c==WHITE)	plot(surface, x*2, y*2);
+				if(at(x, y)) {
+					plot(surface, x*2, y*2);
+				}
 			}
 		}
 		SDL_Rect destination;
