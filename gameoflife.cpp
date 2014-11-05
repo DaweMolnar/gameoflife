@@ -181,11 +181,11 @@ main()
 	if (SDL_Init(SDL_INIT_EVERYTHING) != 0){
 		throw std::runtime_error(SDL_GetError());
 	}
-	SDL_Window* win = SDL_CreateWindow("gameoflife", 0, 0, width, height, 0);
+	SDL_Window* win = SDL_CreateWindow("gameoflife", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_BORDERLESS);
 	if (win == 0) {
 		throw std::runtime_error(SDL_GetError());
 	}
-	SDL_Renderer* ren = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+	SDL_Renderer* ren = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
 	if (ren == 0) {
 		throw std::runtime_error(SDL_GetError());
 	}
