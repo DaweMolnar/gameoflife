@@ -1,4 +1,4 @@
-#include "reference.h"
+#include "reference.hpp"
 
 #include <SDL2/SDL.h>
 

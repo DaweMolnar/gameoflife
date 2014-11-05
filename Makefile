@@ -7,7 +7,7 @@ CPPFLAGS += -O3 -std=c++11 -pthread
 #CPPFLAGS += -g
 ##CPPFLAGS += -pg
 OBJECTS = gameoflife.o
-SOURCE = gameoflife.cc
+SOURCE = gameoflife.cpp
 gameoflife: $(OBJECTS)
 	$(CC) $(CPPFLAGS) $(OBJECTS) -o gameoflife $(LDFLAGS)
 
