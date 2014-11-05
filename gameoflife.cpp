@@ -8,8 +8,8 @@
 #include <stdexcept>
 #include <thread>
 
-const unsigned width = 1366;
-const unsigned height = 768;
+const unsigned width = 640;
+const unsigned height = 400;
 const unsigned bpp = 32;
 static SDL_Texture* texture_ = NULL;
 static const unsigned int cores_ = std::thread::hardware_concurrency();
@@ -27,8 +27,8 @@ plot(SDL_Surface* surface, unsigned x, unsigned y)
 	SDL_Rect rec;
 	rec.x = x;
 	rec.y = y;
-	rec.w = 2;
-	rec.h = 2;
+	rec.w = 1;
+	rec.h = 1;
 	SDL_FillRect(surface,&rec,SDL_MapRGB(surface->format,0xff,0xff,0xff));
 }
 
@@ -44,7 +44,7 @@ public:
 			*i = my_rand() & 1;
 		}
 	}
-
+	
 	void
 	draw(SDL_Renderer* ren)
 	{
@@ -54,7 +54,7 @@ public:
 		for (unsigned y = 0; y < h_; ++y) {
 			for (unsigned x = 0; x < w_; ++x) {
 				if(at(x, y)) {
-					plot(surface, x*2, y*2);
+					plot(surface, x, y);
 				}
 			}
 		}
@@ -119,7 +119,7 @@ public:
 	{
 		std::vector<std::thread> t;
 		for(unsigned int i = 0; i< cores_; i++) {
-			t.push_back(std::thread(&Arena::updateThread,this,i*(w_/cores_),(i+1)*(w_/cores_)+1));
+			t.push_back(std::thread(&Arena::updateThread,this,i*(w_/cores_),(i+1)*(w_/cores_)));
 		}
 		for(unsigned int i = 0; i < t.size(); i++) {
 			t[i].join();
@@ -176,12 +176,12 @@ private:
 int
 main()
 {
-	Arena a(width / 2, height / 2);
+	Arena a(width, height);
 
 	if (SDL_Init(SDL_INIT_EVERYTHING) != 0){
 		throw std::runtime_error(SDL_GetError());
 	}
-	SDL_Window* win = SDL_CreateWindow("gameoflife", 0, 0, width, height, SDL_WINDOW_FULLSCREEN);
+	SDL_Window* win = SDL_CreateWindow("gameoflife", 0, 0, width, height, 0);
 	if (win == 0) {
 		throw std::runtime_error(SDL_GetError());
 	}
